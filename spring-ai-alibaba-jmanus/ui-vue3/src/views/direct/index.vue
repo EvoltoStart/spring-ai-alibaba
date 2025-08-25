@@ -67,6 +67,7 @@
           @focus="handleInputFocus"
           @update-state="handleInputUpdateState"
           @plan-mode-clicked="handlePlanModeClicked"
+          @conversation-mode-clicked="handleConversationModeClicked"
         />
       </div>
 
@@ -521,6 +522,12 @@ const handlePlanModeClicked = () => {
   // Toggle sidebar display state
   sidebarStore.toggleSidebar()
   console.log('[DirectView] Sidebar toggled, isCollapsed:', sidebarStore.isCollapsed)
+}
+
+const handleConversationModeClicked = () => {
+  console.log('[DirectView] Conversation mode button clicked')
+  // Navigate to conversation page
+  router.push('/conversation')
 }
 
 const goBack = () => {

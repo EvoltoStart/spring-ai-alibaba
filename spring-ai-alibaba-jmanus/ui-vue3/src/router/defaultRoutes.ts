@@ -55,10 +55,10 @@ export const routes: Readonly<RouteRecordType[]> = [
       },
       {
         path: '/home',
-        name: 'conversation',
+        name: 'home',
         component: () => import('../views/home/index.vue'),
         meta: {
-          icon: 'carbon:chat',
+          icon: 'carbon:home',
           fullscreen: true,
         },
       },
@@ -68,6 +68,15 @@ export const routes: Readonly<RouteRecordType[]> = [
         component: () => import('../views/direct/index.vue'),
         meta: {
           icon: 'carbon:chat',
+          fullscreen: true,
+        },
+      },
+      {
+        path: '/conversation/:id?',
+        name: 'conversation',
+        component: () => import('../views/conversation/index.vue'),
+        meta: {
+          icon: 'carbon:chat-bot',
           fullscreen: true,
         },
       },

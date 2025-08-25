@@ -45,7 +45,9 @@
           <div class="welcome-section">
             <h2 class="welcome-title">{{ $t('home.welcomeTitle') }}</h2>
             <p class="welcome-subtitle">{{ $t('home.welcomeSubtitle') }}</p>
-            <button class="direct-button" @click="goToDirectPage">{{ $t('home.directButton') }}</button>
+            <div class="action-buttons">
+              <button class="direct-button" @click="goToDirectPage">{{ $t('home.directButton') }}</button>
+            </div>
           </div>
 
           <!-- Input section -->
@@ -109,6 +111,8 @@ const goToDirectPage = () => {
     console.error('[Home] jump to direct page' + t('common.error'), error)
   })
 }
+
+
 
 const examples = computed(() => [
   { title: t('home.examples.stockPrice.title'), type: 'message', description: t('home.examples.stockPrice.description'), icon: 'carbon:chart-line-data', prompt: t('home.examples.stockPrice.prompt') },
@@ -644,16 +648,22 @@ const selectPlan = async (plan: any) => {
   }
 }
 
-.direct-button {
+.action-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
   margin-top: 20px;
+}
+
+.direct-button {
   padding: 12px 24px;
   border: none;
   border-radius: 8px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #ffffff;
   font-size: 16px;
   cursor: pointer;
   transition: all 0.2s ease;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .direct-button:hover {

@@ -36,10 +36,23 @@
         @keydown="handleKeydown"
         @input="adjustInputHeight"
       ></textarea>
-      <button class="plan-mode-btn" :title="$t('input.planMode')" @click="handlePlanModeClick">
-        <Icon icon="carbon:document" />
-        {{ $t('input.planMode') }}
-      </button>
+      <div class="mode-selector" @click.stop>
+        <button class="plan-mode-btn" :class="{ open: showModeDropdown }" :title="$t('input.planMode')" @click="handlePlanModeClick">
+          <Icon icon="carbon:document" />
+          {{ $t('input.planMode') }}
+          <Icon icon="carbon:chevron-down" class="dropdown-icon" />
+        </button>
+        <div class="mode-dropdown" v-show="showModeDropdown">
+          <div class="mode-option" @click="selectPlanMode">
+            <Icon icon="carbon:document" />
+            <span>{{ $t('input.planMode') }}</span>
+          </div>
+          <div class="mode-option" @click="selectConversationMode">
+            <Icon icon="carbon:chat-bot" />
+            <span>{{ $t('conversationManagement.title') }}</span>
+          </div>
+        </div>
+      </div>
       <button
         class="send-button"
         :disabled="!currentInput.trim() || isDisabled"
@@ -99,6 +112,7 @@ interface Emits {
   (e: 'clear'): void
   (e: 'update-state', enabled: boolean, placeholder?: string): void
   (e: 'plan-mode-clicked'): void
+  (e: 'conversation-mode-clicked'): void
   (e: 'files-uploaded', files: UploadedFile[]): void
 }
 
@@ -120,6 +134,7 @@ const currentPlaceholder = ref(defaultPlaceholder.value)
 const uploadedFiles = ref<UploadedFile[]>([])
 const isUploading = ref(false)
 const sessionPlanId = ref<string | null>(null)
+const showModeDropdown = ref(false)
 
 // Function to reset sessionPlanId when starting a new conversation session
 const resetSession = () => {
@@ -129,8 +144,13 @@ const resetSession = () => {
 }
 
 // Auto-reset session when component is unmounted to prevent memory leaks
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
 onUnmounted(() => {
   resetSession()
+  document.removeEventListener('click', handleClickOutside)
 })
 
 // Watch for specific conditions to auto-reset session
@@ -194,8 +214,28 @@ const handleSend = () => {
 }
 
 const handlePlanModeClick = () => {
-  // Trigger the plan mode toggle event
+  // 切换下拉菜单显示状态
+  showModeDropdown.value = !showModeDropdown.value
+}
+
+const selectPlanMode = () => {
+  // 选择计划模式，隐藏下拉菜单，触发原有的计划模式功能
+  showModeDropdown.value = false
   emit('plan-mode-clicked')
+}
+
+const selectConversationMode = () => {
+  // 选择对话模式，隐藏下拉菜单，跳转到对话页面
+  showModeDropdown.value = false
+  emit('conversation-mode-clicked')
+}
+
+// 点击其他地方时隐藏下拉菜单
+const handleClickOutside = (event: MouseEvent) => {
+  const target = event.target as HTMLElement
+  if (!target.closest('.mode-selector')) {
+    showModeDropdown.value = false
+  }
 }
 
 // File upload handlers
@@ -419,10 +459,12 @@ onUnmounted(() => {
   flex-shrink: 0; /* Won't be compressed */
   position: sticky; /* Fixed at the bottom */
   bottom: 0;
-  z-index: 100;
+  z-index: 1000; /* 提高z-index确保下拉菜单显示在最上层 */
   /* Add a slight shadow to distinguish the message area */
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(20px);
+  /* Allow dropdown menus to overflow */
+  overflow: visible;
 }
 
 .input-container {
@@ -433,6 +475,8 @@ onUnmounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 12px 16px;
+  /* Allow dropdown to overflow */
+  overflow: visible;
 
   &:focus-within {
     border-color: #667eea;
@@ -485,8 +529,14 @@ onUnmounted(() => {
   }
 }
 
-.plan-mode-btn {
+.mode-selector {
+  position: relative;
   flex-shrink: 0;
+  /* Ensure dropdown has enough space */
+  overflow: visible;
+}
+
+.plan-mode-btn {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -503,6 +553,61 @@ onUnmounted(() => {
     background: rgba(255, 255, 255, 0.1);
     border-color: #667eea;
     transform: translateY(-1px);
+  }
+
+  .dropdown-icon {
+    font-size: 10px;
+    transition: transform 0.2s ease;
+  }
+  
+  /* 当下拉菜单显示时，箭头向上旋转 */
+  &.open .dropdown-icon {
+    transform: rotate(180deg);
+  }
+}
+
+.mode-dropdown {
+  position: absolute;
+  bottom: 100%; /* 改为向上弹出 */
+  left: 0;
+  min-width: 180px;
+  max-width: 250px;
+  background: rgba(20, 20, 20, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  margin-bottom: 4px; /* 改为margin-bottom */
+  backdrop-filter: blur(10px);
+  z-index: 10000; /* 最高层级 */
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.4); /* 阴影改为向上 */
+  /* 确保下拉菜单不被截断 */
+  white-space: nowrap;
+}
+
+.mode-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  color: #ffffff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-height: 40px;
+  width: 100%;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  &:not(:last-child) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  span {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 

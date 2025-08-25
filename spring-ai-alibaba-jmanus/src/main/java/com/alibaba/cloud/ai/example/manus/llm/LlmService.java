@@ -334,6 +334,7 @@ public class LlmService implements ILlmService, JmanusListener<ModelChangeEvent>
 
 	private ChatClient buildPlanningChatClient(DynamicModelEntity dynamicModelEntity,
 			OpenAiChatOptions defaultOptions) {
+		defaultOptions.setInternalToolExecutionEnabled(false);
 		OpenAiChatModel chatModel = openAiChatModel(dynamicModelEntity, defaultOptions);
 		return ChatClient.builder(chatModel)
 			.defaultAdvisors(new SimpleLoggerAdvisor())
